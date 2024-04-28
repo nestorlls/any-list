@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
@@ -17,19 +17,31 @@ export class ItemsService {
     return await this.itemRepository.save(newItem);
   }
 
-  findAll() {
-    return [];
+  async findAll() {
+    // todo: add pagination, filtering, sorting, etc
+    return await this.itemRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} item`;
+  async findOne(id: string): Promise<Item> {
+    const item = await this.itemRepository.findOneBy({ id });
+    if (!item) throw new NotFoundException(`Item with id '${id}' not found`);
+    return item;
   }
 
-  update(id: number, updateItemInput: UpdateItemInput) {
-    return `This action updates a #${id} item`;
+  async update(id: string, updateItemInput: UpdateItemInput): Promise<Item> {
+    await this.findOne(id);
+    try {
+      const item = await this.itemRepository.preload(updateItemInput);
+      return await this.itemRepository.save(item);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} item`;
+  async remove(id: string): Promise<boolean> {
+    // todo: add soft delete
+    const item = await this.findOne(id);
+    await this.itemRepository.remove(item);
+    return true;
   }
 }
