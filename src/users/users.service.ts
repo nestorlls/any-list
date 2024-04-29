@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -41,6 +42,17 @@ export class UsersService {
     throw new Error('Method not implemented.');
   }
 
+  async findOneByEmail(email: string): Promise<User> {
+    try {
+      return await this.userRepository.findOneByOrFail({ email });
+    } catch (error) {
+      this.handleError({
+        code: 'not_found',
+        detail: `User with email '${email}' not found`,
+      });
+    }
+  }
+
   async block(id: string): Promise<boolean> {
     return true;
   }
@@ -49,6 +61,11 @@ export class UsersService {
     if (error.code === '23505') {
       throw new BadRequestException(error.detail);
     }
+
+    if (error.code === 'not_found') {
+      throw new NotFoundException(error.detail);
+    }
+
     this.logger.error(error);
     throw new InternalServerErrorException();
   }
