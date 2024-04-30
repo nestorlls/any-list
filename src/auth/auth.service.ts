@@ -45,6 +45,11 @@ export class AuthService {
     return user;
   }
 
+  async revalidateToken(user: User): Promise<AuthResponse> {
+    const token = this.getJwtToken(user.id);
+    return { token, user };
+  }
+
   private getJwtToken(userId: string): string {
     return this.jwtService.sign({ id: userId });
   }
