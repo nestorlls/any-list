@@ -6,6 +6,7 @@ import { AuthResponse } from './types/auth-response.type';
 import { LoginInput, RegisterInput } from './dto/input';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { User } from 'src/users/entities/user.entity';
+import { CurrentUser } from './decorators/current-user.decorator';
 
 @Resolver()
 export class AuthResolver {
@@ -26,7 +27,8 @@ export class AuthResolver {
 
   @Query(() => AuthResponse, { name: 'revalidate' })
   @UseGuards(JwtAuthGuard)
-  revalidateToken(user: User): AuthResponse {
+  revalidateToken(@CurrentUser() user: User): AuthResponse {
+    console.log('revalidateToken', user);
     // return this.authService.revalidateToken();
     throw new Error('Method not implemented.');
   }
