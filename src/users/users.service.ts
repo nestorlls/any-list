@@ -12,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 
 import { User } from './entities/user.entity';
 import { RegisterInput } from 'src/auth/dto/input/register.input';
+import { ValidRoles } from 'src/auth/enums/valid-roles.enums';
 
 @Injectable()
 export class UsersService {
@@ -34,8 +35,13 @@ export class UsersService {
     }
   }
 
-  async findAll(): Promise<User[]> {
-    return [];
+  async findAll(roles: ValidRoles[]): Promise<User[]> {
+    if (!roles.length) return await this.userRepository.find();
+
+    return await this.userRepository
+      .createQueryBuilder()
+      .andWhere('ARRAY[roles] && ARRAY[:...roles]', { roles })
+      .getMany();
   }
 
   async findOneById(id: string): Promise<User> {
