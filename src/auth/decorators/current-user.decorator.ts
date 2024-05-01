@@ -10,7 +10,6 @@ import { User } from 'src/users/entities/user.entity';
 
 export const CurrentUser = createParamDecorator(
   (roles: ValidRoles[] = [], context: ExecutionContext) => {
-    console.log({ roles });
     const ctx = GqlExecutionContext.create(context);
     const user: User = ctx.getContext().req.user;
     if (!user) {
