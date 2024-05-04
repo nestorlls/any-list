@@ -66,8 +66,16 @@ export class UsersService {
     }
   }
 
-  async block(id: string): Promise<boolean> {
-    return true;
+  async block(id: string, adminUser: User): Promise<User> {
+    try {
+      const userFound = await this.findOneById(id);
+      userFound.isActive = false;
+      userFound.lastUpdatedBy = adminUser;
+
+      return await this.userRepository.save(userFound);
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   private handleError(error: any): never {
