@@ -32,15 +32,16 @@ type Query {
 }
 
 enum ValidRoles {
-  ADMIN
-  USER
-  SUPERUSER
+  admin
+  user
+  superuser
 }
 
 type Mutation {
   createItem(createItemInput: CreateItemInput!): Item!
   updateItem(updateItemInput: UpdateItemInput!): Item!
   removeItem(id: ID!): Boolean!
+  updateUser(updateUserInput: UpdateUserInput!): User!
   blockUser(id: ID!): User!
   register(registerInput: RegisterInput!): AuthResponse!
   login(loginInput: LoginInput!): AuthResponse!
@@ -57,6 +58,15 @@ input UpdateItemInput {
   quantity: Float
   quantityUnits: String
   id: ID!
+}
+
+input UpdateUserInput {
+  fullName: String
+  email: String
+  password: String
+  id: ID!
+  roles: [ValidRoles!]
+  isActive: Boolean
 }
 
 input RegisterInput {
