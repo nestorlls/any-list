@@ -43,7 +43,12 @@ export class ItemsService {
     return item;
   }
 
-  async update(id: string, updateItemInput: UpdateItemInput): Promise<Item> {
+  async update(
+    id: string,
+    updateItemInput: UpdateItemInput,
+    user: User,
+  ): Promise<Item> {
+    this.findOne(id, user);
     try {
       const item = await this.itemRepository.preload(updateItemInput);
       return await this.itemRepository.save(item);
@@ -57,5 +62,11 @@ export class ItemsService {
     const item = await this.findOne(id, user);
     await this.itemRepository.remove(item);
     return true;
+  }
+
+  async itemCountByUser(user: User): Promise<number> {
+    return await this.itemRepository.count({
+      where: { user: { id: user.id } },
+    });
   }
 }
