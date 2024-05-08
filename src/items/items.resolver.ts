@@ -22,8 +22,9 @@ export class ItemsResolver {
   }
 
   @Query(() => [Item], { name: 'items' })
-  async findAll(): Promise<Item[]> {
-    return await this.itemsService.findAll();
+  @UseGuards(JwtAuthGuard)
+  async findAll(@CurrentUser() user: User): Promise<Item[]> {
+    return await this.itemsService.findAll(user);
   }
 
   @Query(() => Item, { name: 'item' })
