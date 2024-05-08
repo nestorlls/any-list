@@ -28,7 +28,10 @@ export class Item {
   quantityUnits?: string;
   // stores
   // user
-  @ManyToOne(() => User, (user) => user.items, { nullable: false })
+  @ManyToOne(() => User, (user) => user.items, {
+    nullable: false,
+    lazy: true,
+  })
   @Index('user_id_idx')
   @Field(() => User)
   user: User;
