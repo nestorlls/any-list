@@ -10,7 +10,10 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  await app.listen(3000);
-  Logger.log(`Application is running on: 3000`, 'NestApplication');
+  await app.listen(process.env.PORT);
+  Logger.log(
+    `Application is running on: ${process.env.PORT}`,
+    'NestApplication',
+  );
 }
 bootstrap();
