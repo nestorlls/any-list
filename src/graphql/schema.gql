@@ -16,7 +16,7 @@ type User {
 type Item {
   id: ID!
   name: String!
-  quantity: Float!
+  category: String!
   quantityUnits: String
   user: User!
 }
@@ -48,6 +48,9 @@ type Mutation {
   createItem(createItemInput: CreateItemInput!): Item!
   updateItem(updateItemInput: UpdateItemInput!): Item!
   removeItem(id: ID!): Boolean!
+
+  """Execute seed to db"""
+  executeSeed: Boolean!
 }
 
 input RegisterInput {
@@ -72,13 +75,13 @@ input UpdateUserInput {
 
 input CreateItemInput {
   name: String!
-  quantity: Float!
+  category: Float!
   quantityUnits: String
 }
 
 input UpdateItemInput {
   name: String
-  quantity: Float
+  category: Float
   quantityUnits: String
   id: ID!
 }

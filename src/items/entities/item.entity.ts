@@ -1,4 +1,4 @@
-import { Field, Float, ID, ObjectType } from '@nestjs/graphql';
+import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { User } from 'src/users/entities/user.entity';
 import {
   Column,
@@ -20,8 +20,8 @@ export class Item {
   name: string;
 
   @Column()
-  @Field(() => Float)
-  quantity: number;
+  @Field(() => String)
+  category: string;
 
   @Column({ nullable: true })
   @Field(() => String, { nullable: true })
