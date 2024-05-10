@@ -22,7 +22,7 @@ export class CreateItemInput {
   @IsNumber()
   @Min(1)
   @IsPositive()
-  quantity: number;
+  category: string;
 
   @Field(() => String, { nullable: true })
   @IsString()
