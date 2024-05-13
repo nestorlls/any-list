@@ -1,3 +1,4 @@
+import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import {
   Resolver,
   Query,
@@ -10,14 +11,18 @@ import {
 } from '@nestjs/graphql';
 
 import { UsersService } from './users.service';
+import { ItemsService } from 'src/items/items.service';
+
 import { User } from './entities/user.entity';
+import { Item } from 'src/items/entities/item.entity';
+
+import { UpdateUserInput } from './dto/inputs/update-user.input';
+import { PaginationArgs, SearchArgs } from 'src/common/dto/args';
 import { ValidRolesArgs } from 'src/auth/dto/args/roles.arg';
-import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { ValidRoles } from 'src/auth/enums/valid-roles.enums';
+
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { ValidRoles } from 'src/auth/enums/valid-roles.enums';
-import { UpdateUserInput } from './dto/inputs/update-user.input';
-import { ItemsService } from 'src/items/items.service';
 
 @Resolver(() => User)
 @UseGuards(JwtAuthGuard)
@@ -30,7 +35,7 @@ export class UsersResolver {
   @Query(() => [User], { name: 'users' })
   findAll(
     @Args() validRoles: ValidRolesArgs,
-    @CurrentUser([ValidRoles.admin]) user: User,
+    @CurrentUser([ValidRoles.admin]) adminUser: User,
   ): Promise<User[]> {
     return this.usersService.findAll(validRoles.roles);
   }
@@ -61,5 +66,15 @@ export class UsersResolver {
   @ResolveField(() => Int, { name: 'itenCount' })
   itemCount(@Parent() user: User): Promise<number> {
     return this.itemService.itemCountByUser(user);
+  }
+
+  @ResolveField(() => [Item], { name: 'items' })
+  getItemsByUser(
+    @Parent() user: User,
+    @CurrentUser([ValidRoles.admin]) adminUser: User,
+    @Args() paginationArgs: PaginationArgs,
+    @Args() searchTerm: SearchArgs,
+  ): Promise<Item[]> {
+    return this.itemService.findAll(paginationArgs, searchTerm, user);
   }
 }
