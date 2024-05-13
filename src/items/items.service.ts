@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { CreateItemInput, UpdateItemInput } from './dto';
 import { Item } from './entities/item.entity';
 import { User } from 'src/users/entities/user.entity';
-import { PaginationArgs } from 'src/common/dto/args/pagination.arg';
+import { SearchArgs, PaginationArgs } from 'src/common/dto/args';
 
 @Injectable()
 export class ItemsService {
@@ -19,21 +19,27 @@ export class ItemsService {
     return await this.itemRepository.save(newItem);
   }
 
-  async findAll(paginationArgs: PaginationArgs, user: User): Promise<Item[]> {
-    // todo: add pagination, filtering, sorting, etc
+  async findAll(
+    paginationArgs: PaginationArgs,
+    searchArgs: SearchArgs,
+    user: User,
+  ): Promise<Item[]> {
     const { limit, offset } = paginationArgs;
-    if (user.isActive)
-      return await this.itemRepository.find({
-        take: limit,
-        skip: offset,
-        where: {
-          user: {
-            id: user.id,
-          },
-        },
-      });
+    const { search } = searchArgs;
 
-    return await this.itemRepository.find();
+    const queryBuilder = this.itemRepository
+      .createQueryBuilder()
+      .take(limit)
+      .skip(offset)
+      .where(`"userId" = :userId`, { userId: user.id });
+
+    if (search) {
+      queryBuilder.andWhere(`LOWER(name) LIKE LOWER(:name)`, {
+        name: `%${search}%`,
+      });
+    }
+
+    return await queryBuilder.getMany();
   }
 
   async findOne(id: string, user: User): Promise<Item> {
