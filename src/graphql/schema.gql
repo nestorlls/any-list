@@ -2,6 +2,11 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type List {
+  id: ID!
+  name: String!
+}
+
 type User {
   id: ID!
   fullName: String!
@@ -32,6 +37,8 @@ type Query {
   user(id: ID!): User!
   items(offset: Int = 0, limit: Int = 10, search: String): [Item!]!
   item(id: ID!): Item!
+  lists(offset: Int = 0, limit: Int = 10, search: String): [List!]!
+  list(id: ID!): List!
 }
 
 enum ValidRoles {
@@ -51,6 +58,9 @@ type Mutation {
 
   """Execute seed to db"""
   executeSeed: Boolean!
+  createList(createListInput: CreateListInput!): List!
+  updateList(updateListInput: UpdateListInput!): List!
+  removeList(id: ID!): List!
 }
 
 input RegisterInput {
@@ -83,5 +93,14 @@ input UpdateItemInput {
   name: String
   category: Float
   quantityUnits: String
+  id: ID!
+}
+
+input CreateListInput {
+  name: String!
+}
+
+input UpdateListInput {
+  name: String
   id: ID!
 }
