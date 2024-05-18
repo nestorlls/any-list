@@ -11,18 +11,21 @@ import {
 } from '@nestjs/graphql';
 
 import { UsersService } from './users.service';
-import { ItemsService } from 'src/items/items.service';
+import { ItemsService } from '../items/items.service';
 
 import { User } from './entities/user.entity';
-import { Item } from 'src/items/entities/item.entity';
+import { Item } from '../items/entities/item.entity';
+import { List } from '../lists/entities/list.entity';
 
 import { UpdateUserInput } from './dto/inputs/update-user.input';
-import { PaginationArgs, SearchArgs } from 'src/common/dto/args';
-import { ValidRolesArgs } from 'src/auth/dto/args/roles.arg';
-import { ValidRoles } from 'src/auth/enums/valid-roles.enums';
+import { PaginationArgs, SearchArgs } from '../common/dto/args';
+import { ValidRolesArgs } from '../auth/dto/args/roles.arg';
 
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { ValidRoles } from '../auth/enums/valid-roles.enums';
+
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { ListsService } from '../lists/lists.service';
 
 @Resolver(() => User)
 @UseGuards(JwtAuthGuard)
@@ -30,6 +33,7 @@ export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
     private readonly itemService: ItemsService,
+    private readonly listsService: ListsService,
   ) {}
 
   @Query(() => [User], { name: 'users' })
@@ -82,5 +86,20 @@ export class UsersResolver {
     @Args() searchTerm: SearchArgs,
   ): Promise<Item[]> {
     return this.itemService.findAll(paginationArgs, searchTerm, user);
+  }
+
+  @ResolveField(() => Int, { name: 'listCount' })
+  listCount(@Parent() user: User): Promise<number> {
+    return this.listsService.listCountByUser(user);
+  }
+
+  @ResolveField(() => [List], { name: 'lists' })
+  getListsByUser(
+    @Parent() user: User,
+    @CurrentUser() adminUser: User,
+    @Args() paginationArgs: PaginationArgs,
+    @Args() searchArgs: SearchArgs,
+  ) {
+    return this.listsService.findAll(paginationArgs, searchArgs, user);
   }
 }

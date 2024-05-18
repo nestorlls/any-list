@@ -3,11 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
 
-import { CreateItemInput, UpdateItemInput } from './dto';
 import { Item } from './entities/item.entity';
-import { User } from 'src/users/entities/user.entity';
-import { SearchArgs, PaginationArgs } from 'src/common/dto/args';
-
+import { SearchArgs, PaginationArgs } from '../common/dto/args';
+import { CreateItemInput, UpdateItemInput } from './dto';
+import { User } from '../users/entities/user.entity';
 @Injectable()
 export class ItemsService {
   constructor(

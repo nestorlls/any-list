@@ -1,11 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { Repository } from 'typeorm';
+
+import { List } from './entities/list.entity';
+import { User } from '../users/entities/user.entity';
+
 import { CreateListInput } from './dto/inputs/create-list.input';
 import { UpdateListInput } from './dto/inputs/update-list.input';
-import { List } from './entities/list.entity';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/users/entities/user.entity';
-import { PaginationArgs, SearchArgs } from 'src/common/dto/args';
+import { PaginationArgs, SearchArgs } from '../common/dto/args';
 
 @Injectable()
 export class ListsService {
@@ -58,12 +61,23 @@ export class ListsService {
     user: User,
   ): Promise<List> {
     this.findOne(id, user);
-    const list = await this.listRepository.preload(updateListInput);
+    const list = await this.listRepository.preload({
+      ...updateListInput,
+      user,
+    });
     if (!list) throw new NotFoundException(`List with id '${id}' not found`);
     return this.listRepository.save(list);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} list`;
+  async remove(id: string, user: User): Promise<boolean> {
+    const list = await this.findOne(id, user);
+    await this.listRepository.remove(list);
+    return true;
+  }
+
+  async listCountByUser(user: User): Promise<number> {
+    return await this.listRepository.count({
+      where: { user: { id: user.id } },
+    });
   }
 }
