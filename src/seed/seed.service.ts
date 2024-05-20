@@ -4,13 +4,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
 
-import { User } from 'src/users/entities/user.entity';
 import { Item } from 'src/items/entities/item.entity';
-import { UsersService } from 'src/users/users.service';
-import { SEED_ITEMS, SEED_USERS } from './data/seed-data';
-import { ItemsService } from 'src/items/items.service';
-import { ListItem } from 'src/list-item/entities/list-item.entity';
 import { List } from 'src/lists/entities/list.entity';
+import { ListItem } from 'src/list-item/entities/list-item.entity';
+import { User } from 'src/users/entities/user.entity';
+
+import { ItemsService } from 'src/items/items.service';
+import { ListItemService } from 'src/list-item/list-item.service';
+import { ListsService } from 'src/lists/lists.service';
+import { UsersService } from 'src/users/users.service';
+
+import { SEED_ITEMS, SEED_LIST, SEED_USERS } from './data/seed-data';
 
 @Injectable()
 export class SeedService {
@@ -30,6 +34,8 @@ export class SeedService {
 
     private readonly userService: UsersService,
     private readonly itemService: ItemsService,
+    private readonly listService: ListsService,
+    private readonly listItemService: ListItemService,
   ) {
     this.isProd = configService.get('STATE') === 'prod';
   }
@@ -41,6 +47,15 @@ export class SeedService {
     await this.deleteDataBase();
     const users = await this.loadUsers();
     await this.loadItems(users);
+    const list = await this.loadLists(users);
+
+    const items = await this.itemService.findAll(
+      { limit: 15, offset: 0 },
+      {},
+      users.at(0),
+    );
+
+    await this.loadListItems(items, list);
 
     return true;
   }
@@ -78,5 +93,31 @@ export class SeedService {
     }
 
     Promise.all(itemsPromises);
+  }
+
+  private async loadLists(users: User[]): Promise<List> {
+    const listsPromises = [];
+    for (const list of SEED_LIST) {
+      const randomIndex = Math.floor(Math.random() * users.length);
+      const user = users[randomIndex];
+      listsPromises.push(this.listService.create(list, user));
+    }
+    const list = await Promise.all(listsPromises);
+    return list.at(0);
+  }
+
+  private async loadListItems(items: Item[], list: List): Promise<void> {
+    const listItemsPromises = [];
+    for (const item of items) {
+      listItemsPromises.push(
+        this.listItemService.create({
+          quantity: Math.floor(Math.random() * 10) + 1,
+          completed: Math.round(Math.random() * 1) === 1,
+          listId: list.id,
+          itemId: item.id,
+        }),
+      );
+    }
+    Promise.all(listItemsPromises);
   }
 }
